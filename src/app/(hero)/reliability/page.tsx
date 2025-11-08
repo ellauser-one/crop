@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function page() {
   return (
     <div>
-    <Hero imgUrl={homeSrc} altText='Reliability' content='Welcome to our reliability'/>
+    <Hero imgUrl={homeSrc} altText='Reliability' content='our reliability'/>
     </div>
   )
 }

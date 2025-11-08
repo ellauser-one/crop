@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function page() {
   return (
     <div>
-    <Hero imgUrl={homeSrc} altText='Performance' content='Welcome to our performance'/>
+    <Hero imgUrl={homeSrc} altText='Performance' content='Welcome to performance'/>
     </div>
   )
 }
