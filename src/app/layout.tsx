@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ADLaM_Display } from "next/font/google";
 import "./globals.css";
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 const inter = ADLaM_Display({ subsets: ['latin'], weight: '400' });
 
@@ -17,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {children}
+        <AntdRegistry>{children}</AntdRegistry>
       </body>
     </html>
   );
