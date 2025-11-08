@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ADLaM_Display } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
-import Link from "next/link";
 
 const inter = ADLaM_Display({ subsets: ['latin'], weight: '400' });
 
@@ -13,28 +12,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  team,
-  analytics,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
-  team: React.ReactNode;
-  analytics: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="en">
       <body className={inter.className}>
         <AntdRegistry>
-          <div className="container mx-auto">
-            <div className="flex justify-center text-blue-500 p-6 gap-6">
-              <Link href="/">Home</Link> |{" "}
-              <Link href="/visitors">Visitors</Link>
-            </div>
-            <div className="flex gap-6">
-              {team}
-              {analytics}
-            </div>
             {children}
-          </div>
+            {modal}
         </AntdRegistry>
       </body>
     </html>
