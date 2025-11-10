@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 type Article = {
@@ -9,7 +9,7 @@ type Article = {
     content: string;
 };
 
-export default function ArticlesPage() {
+export default function ArticlesClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -21,35 +21,27 @@ export default function ArticlesPage() {
     const [q, setQ] = useState('');
     const pageSize = 5;
 
-    /* 兼容后端各种返回格式，提取列表与总数 */
     const normalize = (json: any) => {
-        // 优先支持 { list, total }
         if (json?.list && typeof json.list === 'object') {
             return { list: json.list, total: json.total ?? json.count ?? json.list.length };
         }
-        // 支持 { data: { list, total } }
         if (json?.data && json.data.list && Array.isArray(json.data.list)) {
             return { list: json.data.list, total: json.data.total ?? json.data.count ?? json.data.list.length };
         }
-        // 支持 { data: [...] } 或 { data: { posts: [...] } }
         if (Array.isArray(json?.data)) return { list: json.data, total: json.data.length };
         if (Array.isArray(json?.data?.posts)) return { list: json.data.posts, total: json.data.total ?? json.data.posts.length };
-        // 支持直接数组
         if (Array.isArray(json)) return { list: json, total: json.length };
         return { list: [], total: 0 };
     };
 
-    /* 获取数据，使用 AbortController 取消前一次请求以避免重复，并对相同请求做去重（防止 Strict Mode 双次 mount） */
     const currentController = useRef<AbortController | null>(null);
     const inFlight = useRef<Record<string, boolean>>({});
 
     const fetchData = async (p = pageNum) => {
         const key = `${p}::${q}`;
-        // 如果同一请求已经在进行中，直接跳过
         if (inFlight.current[key]) return;
         inFlight.current[key] = true;
 
-        // cancel previous controller (different page or previous run)
         if (currentController.current) currentController.current.abort();
         const controller = new AbortController();
         currentController.current = controller;
@@ -63,16 +55,13 @@ export default function ArticlesPage() {
             const res = await fetch(url.toString(), { signal: controller.signal });
             const json = await res.json();
             const { list: fetchedList, total: fetchedTotal } = normalize(json);
-            // 确保 id 为字符串
             setList(fetchedList.map((it: any) => ({ ...it, id: String(it.id) })));
             setTotal(Number(fetchedTotal ?? 0));
         } catch (e: any) {
-            if (e?.name === 'AbortError') return; // 预期的取消
+            if (e?.name === 'AbortError') return;
             console.error('fetchData error', e);
         } finally {
-            // clear if same controller
             if (currentController.current === controller) currentController.current = null;
-            // clear in-flight marker
             delete inFlight.current[key];
         }
     };
@@ -85,9 +74,7 @@ export default function ArticlesPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageNum, q]);
 
-    /* 按钮回调 */
     const handleSearch = () => {
-        // 跳到第一页并由 useEffect 触发 fetch
         router.push(`/articles?pageNum=1`);
     };
     const handleReset = () => {
@@ -96,15 +83,13 @@ export default function ArticlesPage() {
     };
     const handleAdd = () => router.push('/articles/new');
 
-    /* 行内操作 */
     const handleEdit = (id: string) => router.push(`/articles/${id}/edit`);
     const handleDelete = async (id: string) => {
         if (!confirm('确定删除？')) return;
         await fetch(`/api/articles/${id}`, { method: 'DELETE' });
-        fetchData(pageNum); // 刷新当前页
+        fetchData(pageNum);
     };
 
-    /* 分页按钮 */
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const goPage = (p: number) => router.push(`/articles?pageNum=${p}`);
 
@@ -123,7 +108,6 @@ export default function ArticlesPage() {
 
     return (
         <div style={{ padding: 24 }}>
-            {/* 顶部搜索和添加 */}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input
@@ -140,7 +124,6 @@ export default function ArticlesPage() {
                 </div>
             </div>
 
-            {/* 表格 */}
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                     <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
@@ -169,7 +152,6 @@ export default function ArticlesPage() {
                 </tbody>
             </table>
 
-            {/* 分页 */}
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 <button disabled={pageNum <= 1} onClick={() => goPage(pageNum - 1)}>‹</button>
                 {pagesToShow.map((p) => (
